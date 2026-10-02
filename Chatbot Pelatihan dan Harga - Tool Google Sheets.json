@@ -1,0 +1,161 @@
+{
+  "name": "Chatbot Pelatihan dan Harga - Tool Google Sheets",
+  "nodes": [
+    {
+      "parameters": {
+        "public": true,
+        "initialMessages": "Halo! 👋 Aku Islamirov v2. Tanya apa saja soal program pelatihan dan harganya ya!",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.5,
+      "position": [
+        0,
+        0
+      ],
+      "id": "adb69add-a22a-4b8a-9e59-869dbaa153b4",
+      "name": "When chat message received",
+      "webhookId": "156862e8-5822-41fb-8b97-d9882583a0f1"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "Kamu adalah \"Islamirov v2\", chatbot asisten informasi pelatihan yang menjawab pertanyaan tentang program pelatihan beserta topik dan harganya. Saat ditanya siapa dirimu, perkenalkan diri sebagai Islamirov v2. Semua informasi pelatihan HANYA boleh diambil dari tool \"Get row(s) in sheet in Google Sheets\". Setiap kali pengguna bertanya soal pelatihan, topik, atau harga, WAJIB panggil tool tersebut dulu sebelum menjawab. Data dari tool berisi BANYAK baris (satu baris = satu pelatihan), jadi baca SEMUA baris, bukan hanya baris pertama. Kolom data: Jenis atau Program Pelatihan, Nama Pelatihan atau Kursus, Deskripsi Topik Pelatihan atau Kursus, dan Biaya atau Harga. Tulis harga dalam format Rupiah, misalnya Rp15.000.000. Dilarang menjawab dari pengetahuan umum atau mengarang data. Jika pelatihan yang ditanyakan tidak ada di data, jawab: \"Maaf, pelatihan itu belum ada di daftar kami.\" Jika pertanyaan di luar topik pelatihan dan harga, tolak dengan sopan dan arahkan kembali ke topik tersebut. Jawab dalam bahasa Indonesia yang santai, singkat, dan jelas."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        224,
+        0
+      ],
+      "id": "33004250-b2d9-4c6b-aaa7-14b033bc8a28",
+      "name": "AI Agent",
+      "retryOnFail": true,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-3.7-flash",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        96,
+        208
+      ],
+      "id": "2e711be9-66fd-4421-992f-99e3ce637696",
+      "name": "Google Gemini Chat Model",
+      "notesInFlow": false,
+      "credentials": {
+        "googlePalmApi": {
+          "id": "CpLTq1xGHFDQ3fog",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.4,
+      "position": [
+        240,
+        208
+      ],
+      "id": "1070c601-83e4-4449-b43a-accce8caab69",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1hYnmLZsZ3m-NaKynA73iA21Q3HXVd7-O7zmIYbmZGH4/edit?usp=sharing",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1hYnmLZsZ3m-NaKynA73iA21Q3HXVd7-O7zmIYbmZGH4/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        384,
+        208
+      ],
+      "id": "ac669864-e52f-4cb8-8156-d751ffbc8806",
+      "name": "Get row(s) in sheet in Google Sheets",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "dKD8At6tQDmAPxC0",
+          "name": "Google Sheets account 2"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet in Google Sheets": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "c207ee26-1489-4fc6-8d37-568f351c70e8",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "dc96f10ae7dc95d3c138575ba243a0a167923dbcb524841d451aadf9135d5fb3"
+  },
+  "nodeGroups": [],
+  "id": "KiNyFNOapjWUQpHx",
+  "tags": []
+}
